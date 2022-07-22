@@ -84,9 +84,7 @@ def norm_jaccard(plane: Plane, prev_planes: List[Plane]) -> Plane:
     results = []
     for prev in prev_planes:
         diff = np.linalg.norm(plane.equation - prev.equation)
-        jaccard = len(np.intersect1d(plane.points, prev.points)) / len(
-            (np.union1d(plane.points, prev.points))
-        )
+        jaccard = get_jaccard_index(plane, prev)
         results.append(diff + 1 - jaccard)
 
     return prev_planes[np.argmin(results)]
