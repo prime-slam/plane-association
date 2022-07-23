@@ -18,7 +18,7 @@ def quality_test(
     for method in methods:
         results_planes = []
         results_points = []
-        for i in tqdm(range(10)):
+        for i in tqdm(range(len(depth) - 1)):
             planes_first = PCD.depth_to_planes(
                 os.path.join(path_to_depth, depth[i]),
                 intrinsics,
