@@ -1,47 +1,43 @@
+import copy
 from statistics import mean
 from typing import List
 from matplotlib import pyplot as plt
-import os
 from tqdm import tqdm
 import PCD
 import time
 import open3d as o3d
 
 
-def read_depth_and_labeled_images(path_to_depth: str, path_to_labeled_images: str):
-    depth = os.listdir(path_to_depth)
-    depth.sort(key=lambda a: int(os.path.splitext(a)[0]))
-    labeled_images = sorted(os.listdir(path_to_labeled_images))
-    return depth, labeled_images
-
-
 def quality_test(
     methods: List,
-    path_to_depth: str,
-    path_to_labeled_images: str,
+    depth_images: List[str],
+    labeled_images: List[str],
     intrinsics: o3d.camera.PinholeCameraIntrinsic,
 ):
-    depth, labeled_images = read_depth_and_labeled_images(
-        path_to_depth, path_to_labeled_images
-    )
     for method in methods:
         results_planes = []
         results_points = []
-        for i in tqdm(range(len(depth) - 1)):
+        for i in tqdm(range(len(depth_images) - 1)):
             planes_first = PCD.depth_to_planes(
-                os.path.join(path_to_depth, depth[i]),
-                intrinsics,
-                os.path.join(path_to_labeled_images, labeled_images[i]),
+                depth_images[i], intrinsics, labeled_images[i]
             )
             planes_second = PCD.depth_to_planes(
-                os.path.join(path_to_depth, depth[i + 1]),
-                intrinsics,
-                os.path.join(path_to_labeled_images, labeled_images[i + 1]),
+                depth_images[i + 1], intrinsics, labeled_images[i + 1]
             )
+
+            # Plane that doesn't exist on the previous frame can't be matched correctly
+            for plane in planes_second:
+                is_found = False
+                for prev in planes_first:
+                    if (prev.color == plane.color).all():
+                        is_found = True
+                if not is_found:
+                    planes_second.remove(plane)
 
             associated = dict.fromkeys(planes_second)
             for plane in planes_second:
-                assoc = method(plane, planes_first)
+                planes_copy = copy.deepcopy(planes_first)
+                assoc = method(plane, planes_copy)
                 associated[plane] = assoc
 
             right = 0
@@ -73,33 +69,28 @@ def quality_test(
 
 def performance_test(
     methods: List,
-    path_to_depth: str,
-    path_to_labeled_images: str,
+    depth_images: List[str],
+    labeled_images: List[str],
     intrinsics: o3d.camera.PinholeCameraIntrinsic,
 ):
-    depth, labeled_images = read_depth_and_labeled_images(
-        path_to_depth, path_to_labeled_images
-    )
-    x = range(0, len(depth) - 1, 10)
+    x = range(0, len(depth_images) - 1, 10)
     for method in methods:
         results = []
         for i in tqdm(x):
             planes_first = PCD.depth_to_planes(
-                os.path.join(path_to_depth, depth[i]),
-                intrinsics,
-                os.path.join(path_to_labeled_images, labeled_images[i]),
+                depth_images[i], intrinsics, labeled_images[i]
             )
             planes_second = PCD.depth_to_planes(
-                os.path.join(path_to_depth, depth[i + 1]),
-                intrinsics,
-                os.path.join(path_to_labeled_images, labeled_images[i + 1]),
+                depth_images[i + 1], intrinsics, labeled_images[i + 1]
             )
 
             one_frame_results = []
             for plane in planes_second:
                 for j in range(10):
+                    planes_copy = copy.deepcopy(planes_first)
+                    plane_copy = copy.deepcopy(plane)
                     start = time.time()
-                    method(plane, planes_first)
+                    method(plane_copy, planes_copy)
                     end = time.time()
                     one_frame_results.append(end - start)
             results.append(mean(one_frame_results))

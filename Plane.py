@@ -20,3 +20,5 @@ class Plane:
         d *= np.sign(d)
         return np.asarray([normal[0], normal[1], normal[2], d])
 
+    def down_sample(self, sample_rate: int):
+        self.points = self.points[::sample_rate]

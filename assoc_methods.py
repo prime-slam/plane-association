@@ -22,7 +22,6 @@ def angle_distance_jaccard(
     :param limit_distance: Threshold for distance between candidates
     :return: Associated plane or None if it doesn't exist
     """
-
     jaccard_indices = []
     for prev in prev_planes:
         angle_cos = get_angle_cos(plane, prev)
@@ -72,19 +71,25 @@ def offset_normal(
         return prev_planes[np.nanargmin(results)]
 
 
-def norm_jaccard(plane: Plane, prev_planes: List[Plane]) -> Plane:
+def angle_distance_jaccard_weighed(
+    plane: Plane, prev_planes: List[Plane], down_sample: int = 1
+) -> Plane:
     """
-    The equation norm - jaccard method.
-    It matches with minimum (norm between planes' equations + 1 - Jaccard index).
+    The angle-distance-Jaccard method.
+    It matches planes by minimizing
+    ((1 - angle_cos) * 5 + distance + (1 - Jaccard) * 2).
     :param plane: Plane from current frame to associate
     :param prev_planes: All planes from previous frame for associating
+    :param down_sample: Sample rate, the selected point indices are [0, k, 2k, …]
     :return: Associated plane
     """
-
+    plane.down_sample(down_sample)
     results = []
     for prev in prev_planes:
-        diff = np.linalg.norm(plane.equation - prev.equation)
-        jaccard = get_jaccard_index(plane, prev)
-        results.append(diff + 1 - jaccard)
+        angle_cos = get_angle_cos(prev, plane)
+        distance = get_distance(prev, plane)
+        prev.down_sample(down_sample)
+        jaccard = get_jaccard_index(prev, plane)
+        results.append((1 - angle_cos) * 5 + distance + (1 - jaccard) * 2)
 
     return prev_planes[np.argmin(results)]
