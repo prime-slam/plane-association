@@ -35,7 +35,7 @@ if __name__ == "__main__":
     )
     angle_distance_jaccard_weighed_downsampled3.__name__ = "weighed_d3"
     angle_distance_jaccard_weighed_downsampled4 = partial(
-        angle_distance_jaccard_weighed, down_sample=10
+        angle_distance_jaccard_weighed, down_sample=4
     )
     angle_distance_jaccard_weighed_downsampled4.__name__ = "weighed_d4"
 
