@@ -69,10 +69,12 @@ def annotate(
 
 
 def depth_to_planes(
-    depth_image: str, intrinsics: o3d.camera.PinholeCameraIntrinsic, image_colors: str
+    depth_image: str,
+    intrinsics: o3d.camera.PinholeCameraIntrinsic,
+    path_to_labeled_image: str,
 ) -> List[Plane]:
     image = cv2.imread(depth_image, cv2.IMREAD_ANYDEPTH)
     pcd, _ = depth_to_pcd_custom(image, intrinsics, 5000)
-    pcd = annotate(pcd, image_colors)
+    pcd = annotate(pcd, path_to_labeled_image)
     planes = get_planes(pcd)
     return planes

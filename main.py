@@ -5,7 +5,7 @@ from functools import partial
 
 import open3d as o3d
 import experiments
-from assoc_methods import angle_distance_jaccard, angle_distance_jaccard_weighed
+from assoc_methods import angle_distance_jaccard, angle_distance_jaccard_weighed, angle_distance_jaccard_weighed_seq
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -26,25 +26,22 @@ if __name__ == "__main__":
         float(intrinsics["cy"]),
     )
 
-    angle_distance_jaccard_weighed_downsampled2 = partial(
-        angle_distance_jaccard_weighed, down_sample=2
+    angle_distance_jaccard_weighed_downsampled10 = partial(
+        angle_distance_jaccard_weighed_seq, sample_rate=10
     )
-    angle_distance_jaccard_weighed_downsampled2.__name__ = "weighed_d2"
-    angle_distance_jaccard_weighed_downsampled3 = partial(
-        angle_distance_jaccard_weighed, down_sample=3
+    angle_distance_jaccard_weighed_downsampled10.__name__ = "weighed_d10"
+
+    full_frame_d10 = partial(
+        angle_distance_jaccard_weighed, sample_rate=10
     )
-    angle_distance_jaccard_weighed_downsampled3.__name__ = "weighed_d3"
-    angle_distance_jaccard_weighed_downsampled4 = partial(
-        angle_distance_jaccard_weighed, down_sample=4
-    )
-    angle_distance_jaccard_weighed_downsampled4.__name__ = "weighed_d4"
+    full_frame_d10.__name__ = "full_frame_d10"
 
     # For ICL NUIM
-    # depth_images = os.listdir(args.path_to_depth)
-    # depth_images.sort(key=lambda a: int(os.path.splitext(a)[0]))
+    depth_images = os.listdir(args.path_to_depth)
+    depth_images.sort(key=lambda a: int(os.path.splitext(a)[0]))
 
     # For TUM
-    depth_images = sorted(os.listdir(args.path_to_depth))
+    # depth_images = sorted(os.listdir(args.path_to_depth))
 
     labeled_images = sorted(os.listdir(args.path_to_labeled_images))
     for i in range(len(depth_images)):
@@ -52,11 +49,8 @@ if __name__ == "__main__":
         labeled_images[i] = os.path.join(args.path_to_labeled_images, labeled_images[i])
 
     methods = [
-        angle_distance_jaccard,
-        angle_distance_jaccard_weighed,
-        angle_distance_jaccard_weighed_downsampled2,
-        angle_distance_jaccard_weighed_downsampled3,
-        angle_distance_jaccard_weighed_downsampled4,
+        angle_distance_jaccard_weighed_downsampled10,
+        full_frame_d10
     ]
     experiments.performance_test(methods, depth_images, labeled_images, intrinsics)
     experiments.quality_test(methods, depth_images, labeled_images, intrinsics)
