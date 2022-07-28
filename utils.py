@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from Plane import Plane
+from plane import Plane
 
 
 def get_jaccard_index(plane1: Plane, plane2: Plane) -> float:

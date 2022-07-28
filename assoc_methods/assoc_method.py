@@ -1,0 +1,12 @@
+from abc import ABC, abstractmethod
+from typing import Optional
+
+from plane import Plane
+
+
+class AssocMethod(ABC):
+    @abstractmethod
+    def get_result(
+        self, prev: Plane, cur: Plane, angle_cos: float, distance: float
+    ) -> Optional[float]:
+        pass

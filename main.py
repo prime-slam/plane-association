@@ -1,11 +1,10 @@
 import argparse
 import configparser
 import os
-from functools import partial
-
 import open3d as o3d
 import experiments
-from assoc_methods import angle_distance_jaccard, angle_distance_jaccard_weighed, angle_distance_jaccard_weighed_seq
+from assoc_methods.jaccard_thresholded import JaccardThresholded
+from assoc_methods.jaccard_weighed import JaccardWeighed
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -26,16 +25,6 @@ if __name__ == "__main__":
         float(intrinsics["cy"]),
     )
 
-    angle_distance_jaccard_weighed_downsampled10 = partial(
-        angle_distance_jaccard_weighed_seq, sample_rate=10
-    )
-    angle_distance_jaccard_weighed_downsampled10.__name__ = "weighed_d10"
-
-    full_frame_d10 = partial(
-        angle_distance_jaccard_weighed, sample_rate=10
-    )
-    full_frame_d10.__name__ = "full_frame_d10"
-
     # For ICL NUIM
     depth_images = os.listdir(args.path_to_depth)
     depth_images.sort(key=lambda a: int(os.path.splitext(a)[0]))
@@ -48,9 +37,8 @@ if __name__ == "__main__":
         depth_images[i] = os.path.join(args.path_to_depth, depth_images[i])
         labeled_images[i] = os.path.join(args.path_to_labeled_images, labeled_images[i])
 
-    methods = [
-        angle_distance_jaccard_weighed_downsampled10,
-        full_frame_d10
-    ]
+    jaccard_thresholded = JaccardThresholded()
+    jaccard_weighed = JaccardWeighed()
+    methods = [(jaccard_weighed, 0, 16), (jaccard_thresholded, 0, 4)]
     experiments.performance_test(methods, depth_images, labeled_images, intrinsics)
     experiments.quality_test(methods, depth_images, labeled_images, intrinsics)

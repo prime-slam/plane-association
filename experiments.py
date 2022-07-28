@@ -1,28 +1,35 @@
 from statistics import mean
-from typing import List
+from typing import List, Tuple
 from matplotlib import pyplot as plt
 from tqdm import tqdm
-import PCD
+
+from assoc_methods.assoc_method import AssocMethod
+from associator import Associator
+from transformator import Transformator
 import time
 import open3d as o3d
 
 
 def quality_test(
-    methods: List,
+    methods: List[Tuple[AssocMethod, float, int]],
     depth_images: List[str],
     labeled_images: List[str],
     intrinsics: o3d.camera.PinholeCameraIntrinsic,
+    depth_scale: int = 5000,
 ):
-    for method in methods:
+    for method, voxel_size, sample_rate in methods:
         results_planes = []
         results_points = []
         x = range(len(depth_images) - 1)
         for i in tqdm(x):
-            prev_planes = PCD.depth_to_planes(
-                depth_images[i], intrinsics, labeled_images[i]
+            transformator = Transformator(
+                voxel_size=voxel_size, sample_rate=sample_rate
             )
-            cur_planes = PCD.depth_to_planes(
-                depth_images[i + 1], intrinsics, labeled_images[i + 1]
+            prev_planes = transformator.get_pcd_and_planes_from_depth(
+                depth_images[i], intrinsics, labeled_images[i], depth_scale
+            )
+            cur_planes = transformator.get_pcd_and_planes_from_depth(
+                depth_images[i + 1], intrinsics, labeled_images[i + 1], depth_scale
             )
 
             # Plane that doesn't exist on the previous frame must be matched with None
@@ -36,7 +43,8 @@ def quality_test(
                 if not is_found:
                     non_existing_planes.add(cur)
 
-            associated = method(cur_planes, prev_planes)
+            associator = Associator(cur_planes, prev_planes)
+            associated = associator.associate(method)
 
             right = 0
             right_points = 0
@@ -62,37 +70,42 @@ def quality_test(
         plt.plot(x, y2, label="Points")
 
         plt.xlabel("Position number")
-        plt.title("Plane association, " + method.__name__)
+        plt.title("Plane association, " + type(method).__name__)
         plt.legend()
-        plt.savefig("plane_assoc_" + method.__name__ + ".pdf")
+        plt.savefig("plane_assoc_" + type(method).__name__ + ".pdf")
         plt.show()
 
 
 def performance_test(
-    methods: List,
+    methods: List[Tuple[AssocMethod, float, int]],
     depth_images: List[str],
     labeled_images: List[str],
     intrinsics: o3d.camera.PinholeCameraIntrinsic,
+    depth_scale: int = 5000,
 ):
     x = range(0, len(depth_images) - 1, 10)
-    for method in methods:
+    for method, voxel_size, sample_rate in methods:
         results = []
         for i in tqdm(x):
-            prev_planes = PCD.depth_to_planes(
-                depth_images[i], intrinsics, labeled_images[i]
+            transformator = Transformator(
+                voxel_size=voxel_size, sample_rate=sample_rate
             )
-            cur_planes = PCD.depth_to_planes(
-                depth_images[i + 1], intrinsics, labeled_images[i + 1]
+            prev_planes = transformator.get_pcd_and_planes_from_depth(
+                depth_images[i], intrinsics, labeled_images[i], depth_scale
+            )
+            cur_planes = transformator.get_pcd_and_planes_from_depth(
+                depth_images[i + 1], intrinsics, labeled_images[i + 1], depth_scale
             )
 
+            associator = Associator(cur_planes, prev_planes)
             one_frame_results = []
             for _ in range(10):
                 start = time.time()
-                method(cur_planes, prev_planes)
+                associator.associate(method)
                 end = time.time()
                 one_frame_results.append(end - start)
             results.append(mean(one_frame_results))
-        plt.plot(x, results, label=method.__name__)
+        plt.plot(x, results, label=type(method).__name__)
 
     plt.xlabel("Position number")
     plt.title("Plane association performance")
