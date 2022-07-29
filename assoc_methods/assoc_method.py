@@ -6,7 +6,5 @@ from plane import Plane
 
 class AssocMethod(ABC):
     @abstractmethod
-    def get_result(
-        self, prev: Plane, cur: Plane, angle_cos: float, distance: float
-    ) -> Optional[float]:
+    def get_result(self, prev: Plane, cur: Plane) -> Optional[float]:
         pass

@@ -6,7 +6,7 @@ import numpy as np
 
 from plane import Plane
 from assoc_methods.assoc_method import AssocMethod
-from utils import get_jaccard_index
+from utils import get_jaccard_index, get_angle_cos, get_distance
 
 
 class JaccardThresholded(AssocMethod):
@@ -14,19 +14,17 @@ class JaccardThresholded(AssocMethod):
         self.limit_distance = limit_distance
         self.limit_angle = limit_angle
 
-    def get_result(
-        self, prev: Plane, cur: Plane, angle_cos: float, distance: float
-    ) -> Optional[float]:
+    def get_result(self, prev: Plane, cur: Plane) -> Optional[float]:
         """
         The angle-distance-Jaccard method.
         It calculates metric for planes
         with an angle and distance below than the threshold value.
         :param prev: Plane from previous frame
         :param cur: Plane from current frame
-        :param angle_cos: Angle between planes
-        :param distance: Distance between plane
         :return: The result of the metric that is (1 - Jaccard index)
         """
+        angle_cos = get_angle_cos(cur, prev)
+        distance = get_distance(cur, prev)
         if (
             math.fabs(angle_cos) > np.cos(self.limit_angle)
         ) and distance < self.limit_distance:

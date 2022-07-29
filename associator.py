@@ -2,7 +2,6 @@ from typing import List
 
 from plane import Plane
 from assoc_methods.assoc_method import AssocMethod
-from utils import get_angle_cos, get_distance
 
 
 class Associator:
@@ -25,9 +24,7 @@ class Associator:
         for cur in self.cur_planes:
             for prev in self.prev_planes:
                 cur_pair = (cur, prev)
-                angle_cos = get_angle_cos(cur, prev)
-                distance = get_distance(cur, prev)
-                metric_result = method.get_result(prev, cur, angle_cos, distance)
+                metric_result = method.get_result(prev, cur)
                 if metric_result is not None:
                     results[cur_pair] = metric_result
 
