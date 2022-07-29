@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import open3d as o3d
 import cv2
@@ -96,8 +98,21 @@ class Transformator:
         self.pcd.colors = o3d.utility.Vector3dVector(colors)
 
     def __downsample(self):
+        colors_copy = copy.deepcopy(self.pcd.colors)
+
+        def get_color(index_vector_raw):
+            index_vector = np.delete(index_vector_raw, np.where(index_vector_raw == -1))
+            color_vector = [colors_copy[index] for index in index_vector]
+            pairs, counts = np.unique(color_vector, axis=0, return_counts=True)
+            return pairs[counts.argmax()]
+
         if self.voxel_size != 0:
-            self.pcd = self.pcd.voxel_down_sample(self.voxel_size)
+            self.pcd, indices, s = self.pcd.voxel_down_sample_and_trace(
+                self.voxel_size, self.pcd.get_min_bound(), self.pcd.get_max_bound()
+            )
+            self.pcd.colors = o3d.utility.Vector3dVector(
+                np.apply_along_axis(get_color, 1, indices)
+            )
         self.pcd = self.pcd.uniform_down_sample(self.sample_rate)
 
     def get_pcd_and_planes_from_depth(
