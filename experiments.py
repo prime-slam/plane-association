@@ -20,7 +20,7 @@ def quality_test(
     for method, voxel_size, sample_rate in methods:
         results_planes = []
         results_points = []
-        x = range(len(depth_images) - 1)
+        x = range(0, len(depth_images) - 1, 10)
         for i in tqdm(x):
             transformator = Transformator(
                 voxel_size=voxel_size, sample_rate=sample_rate
@@ -70,9 +70,13 @@ def quality_test(
         plt.plot(x, y2, label="Points")
 
         plt.xlabel("Position number")
-        plt.title("Plane association, " + type(method).__name__)
+        plt.title(
+            f"Plane association, {type(method).__name__}_v{voxel_size}_u{sample_rate}"
+        )
         plt.legend()
-        plt.savefig("plane_assoc_" + type(method).__name__ + ".pdf")
+        plt.savefig(
+            f"plane_assoc_{type(method).__name__}_v{voxel_size}_u{sample_rate}.pdf"
+        )
         plt.show()
 
 
@@ -105,7 +109,9 @@ def performance_test(
                 end = time.time()
                 one_frame_results.append(end - start)
             results.append(mean(one_frame_results))
-        plt.plot(x, results, label=type(method).__name__)
+        plt.plot(
+            x, results, label=f"{type(method).__name__}_v{voxel_size}_u{sample_rate}"
+        )
 
     plt.xlabel("Position number")
     plt.title("Plane association performance")
