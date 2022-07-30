@@ -18,27 +18,6 @@ class Transformator:
         self.voxel_size = voxel_size
         self.sample_rate = sample_rate
 
-    def __create_plane_from_pcd_indices(self, indices, color) -> Plane:
-        plane_points = np.asarray(self.pcd.points)[indices]
-        equation = Plane.get_normal(plane_points)
-        plane = Plane(plane_points, equation, color)
-        return plane
-
-    def __get_planes_npy(self, colors_npy_path: str) -> List[Plane]:
-        planes = []
-        annot_of_image = np.load(colors_npy_path)
-        annot_unique = np.unique(annot_of_image, axis=0)
-        unique_annot_without_black = list(filter(lambda x: (x != 1), annot_unique))
-
-        for annot_num in unique_annot_without_black:
-            indices = np.where(annot_of_image == annot_num)[0]
-
-            planes.append(
-                self.__create_plane_from_pcd_indices(indices, np.asarray([0, 0, 0]))
-            )
-
-        return planes
-
     def __get_planes_labeled(self) -> List[Plane]:
         planes = []
 
@@ -49,8 +28,9 @@ class Transformator:
 
         for color in unique_colors_without_black:
             indices = np.where((self.pcd.colors == color).all(axis=1))[0]
-
-            planes.append(self.__create_plane_from_pcd_indices(indices, color))
+            plane_points = np.asarray(self.pcd.points)[indices]
+            equation = Plane.get_normal(plane_points)
+            planes.append(Plane(plane_points, equation, color))
 
         return planes
 
@@ -95,6 +75,23 @@ class Transformator:
                 (annotation_rgb.shape[0] * annotation_rgb.shape[1], 3)
             )
         ) / 255
+        self.pcd.colors = o3d.utility.Vector3dVector(colors)
+
+    def __annotate_with_npy(self, annotation_path: str):
+        annot_of_image = np.load(annotation_path)
+        annot_unique = np.unique(annot_of_image, axis=0)
+        colors = np.empty((len(self.pcd.points), 3))
+        unique_colors = {(0, 0, 0)}
+        for annot_num in annot_unique:
+            indices = np.where(annot_of_image == annot_num)[0]
+            if annot_num == 1:
+                colors[indices] = [0, 0, 0]
+                continue
+            unique_color = np.random.random(3)
+            while tuple(unique_color) in unique_colors:
+                unique_color = np.random.random(3)
+            colors[indices] = unique_color
+            unique_colors.add(tuple(unique_color))
         self.pcd.colors = o3d.utility.Vector3dVector(colors)
 
     def __downsample(self):
@@ -144,5 +141,6 @@ class Transformator:
         """
         if self.pcd is None:
             raise ValueError("PointCloud must not be None")
+        self.__annotate_with_npy(colors_npy_path)
         self.__downsample()
-        return self.__get_planes_npy(colors_npy_path)
+        return self.__get_planes_labeled()
