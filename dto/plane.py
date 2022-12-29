@@ -2,8 +2,9 @@ import numpy as np
 
 
 class Plane:
-    def __init__(self, points, equation, color):
+    def __init__(self, points, pcd_indices, equation, color):
         self.points = points
+        self.pcd_indices = pcd_indices
         self.equation = equation
         self.color = color
 

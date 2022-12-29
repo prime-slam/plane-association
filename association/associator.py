@@ -1,7 +1,7 @@
 from typing import List
 
-from plane import Plane
-from assoc_methods.assoc_method import AssocMethod
+from association.assoc_methods.assoc_method import AssocMethod
+from dto.plane import Plane
 
 
 class Associator:

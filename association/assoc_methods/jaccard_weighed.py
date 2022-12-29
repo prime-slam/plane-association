@@ -1,6 +1,6 @@
-from plane import Plane
-from assoc_methods.assoc_method import AssocMethod
-from utils import get_jaccard_index, get_angle_cos, get_distance
+from association.assoc_methods.assoc_method import AssocMethod
+from association.utils import get_angle_cos, get_distance, get_jaccard_index
+from dto.plane import Plane
 
 
 class JaccardWeighed(AssocMethod):

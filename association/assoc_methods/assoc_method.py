@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from plane import Plane
+from dto.plane import Plane
 
 
 class AssocMethod(ABC):

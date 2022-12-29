@@ -1,11 +1,12 @@
 import math
 import numpy as np
-from plane import Plane
+
+from dto.plane import Plane
 
 
 def get_jaccard_index(plane1: Plane, plane2: Plane) -> float:
-    jaccard = len(np.intersect1d(plane1.points, plane2.points)) / len(
-        (np.union1d(plane1.points, plane2.points))
+    jaccard = len(np.intersect1d(plane1.pcd_indices, plane2.pcd_indices)) / len(
+        (np.union1d(plane1.pcd_indices, plane2.pcd_indices))
     )
     return jaccard
 
