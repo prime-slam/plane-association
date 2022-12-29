@@ -12,9 +12,9 @@ def tum_depth_dir_sort_func(filename: str):
 
 
 def depth_to_pcd_custom(
-        depth_image_path: str,
-        camera_intrinsics: o3d.camera.PinholeCameraIntrinsic,
-        depth_scale: float,
+    depth_image_path: str,
+    camera_intrinsics: o3d.camera.PinholeCameraIntrinsic,
+    depth_scale: float,
 ):
     points = np.zeros((camera_intrinsics.width * camera_intrinsics.height, 3))
 
@@ -29,14 +29,12 @@ def depth_to_pcd_custom(
     points[:, 2] = depth_image.flatten() / depth_scale
     intrinsics_matrix = camera_intrinsics.intrinsic_matrix
     points[:, 0] = (
-            (column_indices - intrinsics_matrix[0, 2])
-            * points[:, 2]
-            / intrinsics_matrix[0, 0]
+        (column_indices - intrinsics_matrix[0, 2])
+        * points[:, 2]
+        / intrinsics_matrix[0, 0]
     )
     points[:, 1] = (
-            (row_indices - intrinsics_matrix[1, 2])
-            * points[:, 2]
-            / intrinsics_matrix[1, 1]
+        (row_indices - intrinsics_matrix[1, 2]) * points[:, 2] / intrinsics_matrix[1, 1]
     )
 
     pcd = o3d.geometry.PointCloud()

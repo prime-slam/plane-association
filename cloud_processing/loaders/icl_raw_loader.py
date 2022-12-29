@@ -13,21 +13,30 @@ def icl_raw_depth_to_pcd_custom(depth_image_path, intrinsics, scale):
     fx, fy, cx, cy = __get_camera_params_for_frame(depth_image_path, intrinsics)
 
     x_matrix = np.tile(np.arange(intrinsics.width), (intrinsics.height, 1)).flatten()
-    y_matrix = np.transpose(np.tile(np.arange(intrinsics.height), (intrinsics.width, 1))).flatten()
+    y_matrix = np.transpose(
+        np.tile(np.arange(intrinsics.height), (intrinsics.width, 1))
+    ).flatten()
     x_modifier = (x_matrix - cx) / fx
     y_modifier = (y_matrix - cy) / fy
 
     points = np.zeros((intrinsics.width * intrinsics.height, 3))
 
     pcd = o3d.geometry.PointCloud()
-    with open(depth_image_path, 'r') as input_file:
+    with open(depth_image_path, "r") as input_file:
         data = input_file.read()
-        depth_data = np.asarray(list(
-            map(lambda x: float(x), data.split(" ")[:intrinsics.height * intrinsics.width])
-        ))
+        depth_data = np.asarray(
+            list(
+                map(
+                    lambda x: float(x),
+                    data.split(" ")[: intrinsics.height * intrinsics.width],
+                )
+            )
+        )
         # depth_data = depth_data.reshape((480, 640))
 
-        points[:, 2] = depth_data / np.sqrt(x_modifier ** 2 + y_modifier ** 2 + 1) / scale
+        points[:, 2] = (
+            depth_data / np.sqrt(x_modifier**2 + y_modifier**2 + 1) / scale
+        )
         points[:, 0] = x_modifier * points[:, 2]
         points[:, 1] = y_modifier * points[:, 2]
 
@@ -40,7 +49,7 @@ def icl_raw_depth_to_pcd_custom(depth_image_path, intrinsics, scale):
 def __load_camera_params_from_file(depth_image_path) -> dict:
     result = {}
     params_path = depth_image_path[:-5] + "txt"
-    with open(params_path, 'r') as input_file:
+    with open(params_path, "r") as input_file:
         for line in input_file:
             field_name_start = 0
             field_name_end = line.find(" ")
@@ -59,9 +68,11 @@ def __load_camera_params_from_file(depth_image_path) -> dict:
 def __get_camera_params_for_frame(depth_image_path, intrinsics):
     # Adopted from https://www.doc.ic.ac.uk/~ahanda/VaFRIC/getcamK.m
     camera_params_raw = __load_camera_params_from_file(depth_image_path)
-    cam_dir = np.fromstring(camera_params_raw["cam_dir"][1:-1], dtype=float, sep=',').T
-    cam_right = np.fromstring(camera_params_raw["cam_right"][1:-1], dtype=float, sep=',').T
-    cam_up = np.fromstring(camera_params_raw["cam_up"][1:-1], dtype=float, sep=',').T
+    cam_dir = np.fromstring(camera_params_raw["cam_dir"][1:-1], dtype=float, sep=",").T
+    cam_right = np.fromstring(
+        camera_params_raw["cam_right"][1:-1], dtype=float, sep=","
+    ).T
+    cam_up = np.fromstring(camera_params_raw["cam_up"][1:-1], dtype=float, sep=",").T
     focal = np.linalg.norm(cam_dir)
     aspect = np.linalg.norm(cam_right) / np.linalg.norm(cam_up)
     angle = 2 * math.atan(np.linalg.norm(cam_right) / 2 / focal)
@@ -83,4 +94,3 @@ def __get_camera_params_for_frame(depth_image_path, intrinsics):
     cy = o_y
 
     return fx, fy, cx, cy
-

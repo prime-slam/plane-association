@@ -4,8 +4,15 @@ import open3d as o3d
 
 from cloud_processing.annotator import annotate, get_planes_labeled
 from cloud_processing.down_sample import down_sample
-from cloud_processing.loaders.icl_raw_loader import icl_raw_depth_dir_sort_func, icl_raw_depth_to_pcd_custom
-from cloud_processing.loaders.tum_loader import icl_depth_dir_sort_func, tum_depth_dir_sort_func, depth_to_pcd_custom
+from cloud_processing.loaders.icl_raw_loader import (
+    icl_raw_depth_dir_sort_func,
+    icl_raw_depth_to_pcd_custom,
+)
+from cloud_processing.loaders.tum_loader import (
+    icl_depth_dir_sort_func,
+    tum_depth_dir_sort_func,
+    depth_to_pcd_custom,
+)
 from dto.plane import Plane
 
 
@@ -18,7 +25,7 @@ class Loader:
         intrinsics: o3d.camera.PinholeCameraIntrinsic,
         depth_scale: int,
         voxel_size: float = 0,
-        sample_rate: int = 1
+        sample_rate: int = 1,
     ):
         """
         Class for loading planes from raw data
@@ -50,7 +57,9 @@ class Loader:
             self.annot_images.sort(key=sort_func)
 
         elif depth_format in ["icl_raw"]:
-            self.depth_images = list(filter(lambda x: x.endswith(".depth"), os.listdir(depth_path)))
+            self.depth_images = list(
+                filter(lambda x: x.endswith(".depth"), os.listdir(depth_path))
+            )
             self.depth_images.sort(key=icl_raw_depth_dir_sort_func)
             self.annot_images.sort(key=icl_raw_depth_dir_sort_func)
 
@@ -70,9 +79,13 @@ class Loader:
         depth_image_path = os.path.join(self.depth_path, self.depth_images[frame_num])
         annot_image_path = os.path.join(self.annot_path, self.annot_images[frame_num])
         if self.depth_format != "icl_raw":
-            pcd = depth_to_pcd_custom(depth_image_path, self.intrinsics, self.depth_scale)
+            pcd = depth_to_pcd_custom(
+                depth_image_path, self.intrinsics, self.depth_scale
+            )
         else:
-            pcd = icl_raw_depth_to_pcd_custom(depth_image_path, self.intrinsics, self.depth_scale)
+            pcd = icl_raw_depth_to_pcd_custom(
+                depth_image_path, self.intrinsics, self.depth_scale
+            )
         annotate(annot_image_path, pcd)
         pcd = down_sample(pcd, self.voxel_size, self.sample_rate)
         # o3d.visualization.draw_geometries([pcd])

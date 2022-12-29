@@ -33,7 +33,9 @@ def annotate(annotation_path: str, pcd: o3d.geometry.PointCloud):
 
 def __annotate_with_rgb(annotation_path: str, pcd: o3d.geometry.PointCloud):
     annotation_rgb = cv2.imread(annotation_path)
-    colors = (annotation_rgb.reshape((annotation_rgb.shape[0] * annotation_rgb.shape[1], 3))) / 255
+    colors = (
+        annotation_rgb.reshape((annotation_rgb.shape[0] * annotation_rgb.shape[1], 3))
+    ) / 255
     pcd.colors = o3d.utility.Vector3dVector(colors)
 
 

@@ -27,7 +27,13 @@ if __name__ == "__main__":
     )
 
     scale = int(intrinsics_config["scale"])
-    loader = Loader(args.path_to_depth, args.depth_format, args.path_to_labeled_images, intrinsics, scale)
+    loader = Loader(
+        args.path_to_depth,
+        args.depth_format,
+        args.path_to_labeled_images,
+        intrinsics,
+        scale,
+    )
 
     jaccard_thresholded = JaccardThresholded()
     jaccard_weighed = JaccardWeighed()

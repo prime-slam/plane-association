@@ -12,22 +12,17 @@ from association.associator import Associator
 from cloud_processing.loader import Loader
 
 
-def quality_test(
-    methods: List[Tuple[AssocMethod, float, int]],
-    loader: Loader
-):
-    def plot_metric_res(x, method_res, metric_type: str, method_name: str, min_y: float):
+def quality_test(methods: List[Tuple[AssocMethod, float, int]], loader: Loader):
+    def plot_metric_res(
+        x, method_res, metric_type: str, method_name: str, min_y: float
+    ):
         plt.plot(x, method_res, label=method_name)
 
         plt.xlabel("Position number")
-        plt.title(
-            f"{method_name}, {metric_type} score"
-        )
-        plt.savefig(
-            f"{method_name}_plane_assoc_{metric_type}.pdf"
-        )
+        plt.title(f"{method_name}, {metric_type} score")
+        plt.savefig(f"{method_name}_plane_assoc_{metric_type}.pdf")
         delta = max((1 - min_y) / 10, 0.005)
-        plt.ylim([min_y - delta, 1. + delta])
+        plt.ylim([min_y - delta, 1.0 + delta])
         plt.show()
 
     algo_plane_results = {}
@@ -75,8 +70,12 @@ def quality_test(
             results_planes.append(right / len(associated))
             results_points.append(right_points / all_points)
 
-        algo_plane_results[f"{type(method).__name__}_v{voxel_size}_u{sample_rate}"] = results_planes
-        algo_point_results[f"{type(method).__name__}_v{voxel_size}_u{sample_rate}"] = results_points
+        algo_plane_results[
+            f"{type(method).__name__}_v{voxel_size}_u{sample_rate}"
+        ] = results_planes
+        algo_point_results[
+            f"{type(method).__name__}_v{voxel_size}_u{sample_rate}"
+        ] = results_points
         point_min_y = min(point_min_y, min(results_points))
         plane_min_y = min(plane_min_y, min(results_planes))
 
@@ -85,16 +84,13 @@ def quality_test(
     for algo in algo_point_results.keys():
         plot_metric_res(x, algo_point_results[algo], "points", algo, point_min_y)
 
-    with open('plane_assoc_planes.csv', 'w') as file:
+    with open("plane_assoc_planes.csv", "w") as file:
         dump_res_to_csv(file, x, algo_plane_results)
-    with open('plane_assoc_points.csv', 'w') as file:
+    with open("plane_assoc_points.csv", "w") as file:
         dump_res_to_csv(file, x, algo_point_results)
 
 
-def performance_test(
-    methods: List[Tuple[AssocMethod, float, int]],
-    loader: Loader
-):
+def performance_test(methods: List[Tuple[AssocMethod, float, int]], loader: Loader):
     x = range(0, loader.get_frames_count() - 1, 10)
     total_results = {}
     for method, voxel_size, sample_rate in methods:
@@ -123,7 +119,7 @@ def performance_test(
     plt.savefig("plane_assoc_perf.pdf")
     plt.show()
 
-    with open('plane_assoc_perf.csv', 'w') as file:
+    with open("plane_assoc_perf.csv", "w") as file:
         dump_res_to_csv(file, x, total_results)
 
 
