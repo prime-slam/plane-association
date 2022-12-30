@@ -20,5 +20,11 @@ This benchmark can measure quality and performance of each implemented algorithm
 Quality is measured using plane association metrics from [evops-metrics](https://github.com/prime-slam/evops-metrics) library.
 
 ### Results
-Here you can find result of algorithms comparison on EVOPS dataset. It can be seen that method based on weighted combination of IoU and plane's normal vector shows better quality,
+Here you can find result of algorithms comparison on EVOPS dataset. 
+Performance comparison:
+![](experiment_results/assoc_perf.png)
+Quality comparison:
+![](experiment_results/assoc_quality.png)
+
+It can be seen that method based on weighted combination of IoU and plane's normal vector shows better quality,
 but low performance. However, this problem can be solved by down sampling of the input data. Base down sample solution can be found in `down_sample.py`.

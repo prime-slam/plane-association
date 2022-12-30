@@ -84,9 +84,9 @@ def quality_test(methods: List[Tuple[AssocMethod, float, int]], loader: Loader):
     for algo in algo_point_results.keys():
         plot_metric_res(x, algo_point_results[algo], "points", algo, point_min_y)
 
-    with open("plane_assoc_planes.csv", "w", newline='') as file:
+    with open("plane_assoc_planes.csv", "w", newline="") as file:
         dump_res_to_csv(file, x, algo_plane_results)
-    with open("plane_assoc_points.csv", "w", newline='') as file:
+    with open("plane_assoc_points.csv", "w", newline="") as file:
         dump_res_to_csv(file, x, algo_point_results)
 
 
@@ -119,13 +119,13 @@ def performance_test(methods: List[Tuple[AssocMethod, float, int]], loader: Load
     plt.savefig("plane_assoc_perf.pdf")
     plt.show()
 
-    with open("plane_assoc_perf.csv", "w", newline='') as file:
+    with open("plane_assoc_perf.csv", "w", newline="") as file:
         dump_res_to_csv(file, x, total_results)
 
 
 def dump_res_to_csv(file, x, data_dict: dict):
     header = list(data_dict.keys())
-    writer = csv.writer(file, delimiter=',', quotechar='|')
+    writer = csv.writer(file, delimiter=",", quotechar="|")
     writer.writerow(header)
     for i, _ in enumerate(x):
         frame_results = []
