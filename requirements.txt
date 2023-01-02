@@ -1,0 +1,7 @@
+numpy
+open3d
+matplotlib
+tqdm
+opencv-python
+pre-commit
+black
